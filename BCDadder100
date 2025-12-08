@@ -1,0 +1,51 @@
+module top_module( 
+    input [399:0] a, b,
+    input cin,
+    output cout,
+    output [399:0] sum );
+    wire [99:0]tempcout;
+    genvar i;
+    generate
+        for(i=0; i<100; i=i+1)begin : loop
+            if(i!=0)begin
+                BCDadder BCDaddersN ( 
+                    .x(a[4*i+3 : 4*i] ), 
+                    .y(b[4*i+3 : 4*i] ),
+                    .cin(tempcout[i-1]),
+                    .cout(tempcout[i]),
+                    .sum(sum[4*i+3 : 4*i] )
+                    );
+             end
+             else begin
+                 BCDadder BCDadder0(
+                    .x(a[4*i+3 : 4*i] ), 
+                    .y(b[4*i+3 : 4*i] ),
+                    .cin(cin),
+                    .cout(tempcout[i]),
+                     .sum(sum[4*i+3 : 4*i] )
+                    );
+             end
+        end
+     endgenerate
+     assign cout = tempcout[99];
+     
+endmodule
+module BCDadder(
+    input [3:0]x, y,
+    input cin,
+    output reg cout,
+    output reg [3:0]sum);
+    reg [4:0]temp;
+    always @(*) begin
+        temp = cin+x+y;
+        if(temp>9)begin
+            temp = temp + 6;
+            cout = 1;
+        end 
+        else begin
+            cout = 0;
+        end
+        sum = temp[3:0];
+    end
+    
+endmodule
