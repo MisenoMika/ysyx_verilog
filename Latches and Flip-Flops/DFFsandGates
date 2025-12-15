@@ -36,6 +36,6 @@ module myDFF (
 );
     always @(posedge clk)begin
         q<=D;
-        q_not<=~q;
+        q_not<=~D;
     end
 endmodule
