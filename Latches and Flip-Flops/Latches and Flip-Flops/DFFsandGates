@@ -1,0 +1,38 @@
+module top_module (
+    input clk,
+    input x,
+    output z
+); 
+    wire D1, D2, D3;
+    wire Q1, Q2, Q3;// Q1_not, Q2_not, Q3_not;
+    assign D1 = x ^ Q1;
+    assign D2 = x & ~Q2;
+    assign D3 = x | ~Q3;
+    myDFF instance1(
+        .clk(clk),
+        .D(D1),
+        .q(Q1)
+    	);
+    myDFF instance2(
+        .clk(clk),
+        .D(D2),
+        .q(Q2)
+    	);
+    myDFF instance3(
+        .clk(clk),
+        .D(D3),
+        .q(Q3)
+    	);
+    assign z = ~(Q1 | Q2 | Q3);
+endmodule
+module myDFF (
+    input clk,
+    input D,
+    output reg q
+    //output reg q_not
+);
+    always @(posedge clk)begin
+        q<=D;
+        //q_not<=~D;
+    end
+endmodule

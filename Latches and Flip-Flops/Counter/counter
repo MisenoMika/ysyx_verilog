@@ -1,0 +1,73 @@
+module top_module (
+    input clk,
+    input reset,
+    input enable,
+    output [3:0] Q,
+    output reg c_enable,
+    output reg c_load,
+    output reg [3:0] c_d
+); 
+    initial begin
+        c_d <= 1;
+        c_load <= 1;
+        c_enable <= 1;
+    end
+    count4 the_counter (
+        .clk(clk),
+        .enable(c_enable),
+        .load(c_load),
+        .d(c_d),
+        .Q(Q) 
+    );
+    always @(posedge clk)begin
+        if(reset) begin
+            c_load <= 1;
+            c_enable <= 0;
+            c_d <= 1;
+        end
+        else if(enable && Q <12)begin 
+            c_load <= 0;
+            c_enable <= 1;
+            c_d <= 1;
+        end
+        else if(~enable)begin
+            c_load <= 0;
+            c_enable <= 0;
+            c_d <= 1;
+        end
+        else if(enable && Q >= 12)begin
+            c_load <= 1;
+            c_enable <= 0;
+            c_d <= 1;
+        end
+
+    end
+endmodule
+
+module count4(
+    input clk,
+    input enable,
+    input load,
+    input [3:0] d,
+    output reg [3:0] Q
+);
+    always @(posedge clk) begin
+        if (load) begin
+            Q <= d; // 加载优先级高于使能
+        end else if (enable) begin
+            Q <= Q + 1'b1; // 使能有效时递增
+        end
+        // 否则保持原状态
+    end
+endmodule
+
+module Slow_decade_counter (
+    input clk,
+    input slowena,
+    input reset,
+    output reg [3:0] q);
+    always @(posedge clk)begin
+        if(slowena && ~reset)q <=(q<9)? q+1:0;
+        else if(reset) q <= 0;
+    end
+endmodule

@@ -1,0 +1,33 @@
+module top_module (
+	input c,
+	input d,
+	output [3:0] mux_in
+);
+	
+	// After splitting the truth table into four columns,
+	// the rest of this question involves implementing logic functions
+	// using only multiplexers (no other gates).
+	// I will use the conditional operator for each 2-to-1 mux: (s ? a : b)
+	assign mux_in[0] = c ? 1 : d;          // 1 mux:   c|d
+	assign mux_in[1] = 0;                  // No muxes:  0
+	assign mux_in[2] = d ? 0 : 1;          // 1 mux:    ~d
+	assign mux_in[3] = c ? d : 0;          // 1 mux:   c&d
+	
+endmodule
+//用多路复用器实现逻辑功能
+module top_module1 (
+    input clk,
+    input resetn,
+    input [1:0] byteena,
+    input [15:0] d,
+    output reg [15:0] q
+);
+    always@(posedge clk)begin
+        if(!resetn) q<=0;
+        else 
+            if (byteena[1]) q[15:8] <= d[15:8];
+        //else q[15:8] <= 0;
+			if (byteena[0]) q[7:0]  <= d[7:0];
+        //else q[7:0] <= 0;
+	 end
+endmodule
