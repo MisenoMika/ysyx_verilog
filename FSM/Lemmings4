@@ -1,0 +1,89 @@
+module top_module(
+    input clk,
+    input areset,    // Freshly brainwashed Lemmings walk left.
+    input bump_left,
+    input bump_right,
+    input ground,
+    input dig,
+    output walk_left,
+    output walk_right,
+    output aaah,
+    output digging ); 
+
+    parameter LEFT=3'b0, RIGHT=3'b001, FALL_L=3'b010, FALL_R=3'b011, 
+        DIG_L=3'b100, DIG_R=3'b101, DEAD=3'b110;
+    reg [2:0]state, next_state;
+    reg [31:0]count;
+    always @(*) begin
+        // State transition logic
+        next_state = state;
+        if(state != DEAD) begin
+            if(!ground) begin
+                if(state == LEFT || state == DIG_L)
+                    next_state = FALL_L;
+                else if(state == RIGHT || state == DIG_R)
+                    next_state = FALL_R;
+            end
+            else if(count >= 20) begin
+                next_state = DEAD;
+            end
+            else if(dig && state != FALL_L && state != FALL_R)begin
+                if(state == LEFT)
+                    next_state = DIG_L;
+                else if(state == RIGHT)
+                    next_state = DIG_R;
+            end
+            else begin
+                if(state == FALL_L) begin
+                    next_state = LEFT;
+                end
+                else if(state == FALL_R)begin
+                    next_state = RIGHT;
+                end
+                else if(state == DIG_L)begin
+                    next_state = DIG_L;
+                end
+                else if(state == DIG_R)begin
+                    next_state = DIG_R;
+                end
+                else begin
+                    case (state)
+                        LEFT: 
+                            next_state = (bump_left)? RIGHT : LEFT;
+                        RIGHT:
+                            next_state = (bump_right)? LEFT : RIGHT;
+                    endcase
+                end
+            end
+        end
+        else if(state == DEAD) begin
+            next_state = DEAD;
+        end
+    end
+
+    always @(posedge clk, posedge areset) begin
+        // State flip-flops with asynchronous reset
+        if(areset)begin
+            state <= LEFT;
+        end
+        else begin
+            state <= next_state;
+            if(state == FALL_L || state == FALL_R) begin
+                    count <= count + 1;
+                end
+            else begin
+                count <= 0;
+            end
+        end
+    end
+
+    // Output logic
+    // assign walk_left = (state == ...);
+    // assign walk_right = (state == ...);
+    assign walk_left  = (state == LEFT && state != DEAD);
+    assign walk_right = (state == RIGHT && state != DEAD);
+    assign aaah = (state == FALL_L || state == FALL_R && state != DEAD);
+    assign digging = (state == DIG_L || state == DIG_R && state != DEAD);
+
+
+endmodule

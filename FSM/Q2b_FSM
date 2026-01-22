@@ -1,0 +1,56 @@
+module top_module (
+    input clk,
+    input resetn,    // active-low synchronous reset
+    input x,
+    input y,
+    output f,
+    output g
+); 
+    parameter START = 4'b0000, MONITOR = 4'b0001, S1 = 4'b0010, S10 = 4'b0011,
+              S101 = 4'b0100, S101_0 = 4'b0101, ERR = 4'b0110, S0 = 4'b0111, DONE = 4'b1000;
+    reg [3:0] state, next_state;
+    always@(*)begin
+        case(state)
+            START: begin
+                next_state = MONITOR;
+            end
+            MONITOR: begin
+                next_state = (x == 1)? S1 : S0;
+            end
+            S1: begin
+                next_state = (x == 1)? S1 : S10;
+            end
+            S0: begin
+                next_state = (x == 1)? S1 : S0;
+            end
+            S10: begin
+                next_state = (x == 1)? S101 : S0;
+            end
+            S101: begin
+                next_state = (y == 1)? DONE : S101_0;
+            end
+            S101_0: begin
+                next_state = (y == 1)? DONE: ERR;
+            end
+            ERR: begin
+                next_state = ERR;
+            end
+            DONE: begin
+                next_state = DONE;
+            end
+            default: next_state = START;
+        endcase
+    end
+
+    always@(posedge clk) begin
+        if (!resetn) begin
+            state <= START;
+        end 
+        else begin
+            state <= next_state;
+        end
+    end
+
+    assign f = (state == MONITOR);
+    assign g = (state == S101 || state == S101_0 || state == DONE);
+endmodule

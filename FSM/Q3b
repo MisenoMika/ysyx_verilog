@@ -1,0 +1,40 @@
+module top_module (
+    input clk,
+    input reset,   // Synchronous reset
+    input x,
+    output z
+);
+    parameter S000 = 3'b000, S001 = 3'b001, S010 = 3'b010, S011 = 3'b011,
+              S100 = 3'b100;
+    reg [2:0] state, next_state;
+    always@(*)begin
+        case(state)
+            S000: begin
+                next_state = (x == 1)? S001 : S000;
+            end
+            S001: begin
+                next_state = (x == 1)? S100 : S001;
+            end
+            S010: begin
+                next_state = (x == 1)? S001 : S010;
+            end
+            S011: begin
+                next_state = (x == 1)? S010 : S001;
+            end
+            S100: begin
+                next_state = (x == 1)? S100 : S011;
+            end
+        endcase
+    end
+    
+
+    always@(posedge clk) begin
+        if (reset) begin
+            state <= S000;
+        end 
+        else begin
+            state <= next_state;
+        end
+    end
+    assign z = (state == S011 || state == S100);
+endmodule

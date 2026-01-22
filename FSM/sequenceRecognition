@@ -1,0 +1,93 @@
+
+你说：
+module top_module(
+    input clk,
+    input reset,    // Synchronous reset
+    input in,
+    output disc,
+    output flag,
+    output err);
+
+    parameter IDLE = 3'b000, COUNT = 3'b001, DISC = 3'b010, FLAG = 3'b011, ERRO = 3'b100;
+    reg [3:0] state, next_state;
+    reg[7:0] count;//count how many 1;
+    always @(*)begin
+        case(state)
+            IDLE: begin
+                if(in == 1) begin
+                    next_state = COUNT;
+                end
+                else begin
+                    next_state = IDLE;
+                end
+            end
+            COUNT:begin
+                if(count < 5 && in == 0) begin
+                    next_state = IDLE;
+                end
+                else if(count == 5)begin
+                    if(in == 0) begin
+                        next_state = DISC;
+                    end
+                    else begin
+                        next_state = COUNT;
+                    end
+                end
+                else if(count == 6)begin
+                    if(in == 0) begin
+                        next_state = FLAG;
+                    end
+                    else begin
+                        next_state = ERRO;
+                    end
+                end
+                else begin
+                    next_state = COUNT;                    
+                end
+            end
+            DISC: begin
+                if(in == 1) begin
+                    next_state = COUNT;
+                end
+                else begin
+                    next_state = IDLE;
+                end
+            end
+            FLAG: begin
+                if(in == 1) begin
+                    next_state = COUNT;
+                end
+                else begin
+                    next_state = IDLE;
+                end
+            end
+            ERRO: begin
+                if(in == 1) begin
+                    next_state = ERRO;
+                end
+                else begin
+                    next_state = IDLE;
+                end
+            end
+        endcase
+    end
+
+    always @(posedge clk) begin
+        if (reset) begin
+            state <= IDLE;
+        end 
+        else begin
+            state <= next_state;
+            if(next_state == COUNT) begin
+                count <= count + 1'd1;
+            end
+            else begin
+                count <= 1;
+            end
+        end
+    end
+
+    assign disc = (state == DISC);
+    assign flag = (state == FLAG);
+    assign err  = (state == ERRO);
+endmodule
