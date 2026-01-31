@@ -1,4 +1,4 @@
-module Clock_top(
+module segmentDecoder(
     input clk,
     input reset,
     input [31:0]load,
