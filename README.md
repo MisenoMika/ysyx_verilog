@@ -1,2 +1,2 @@
-## Just some practinces from HDLBits
+## Just some practices from HDLBits
 
