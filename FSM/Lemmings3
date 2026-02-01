@@ -1,0 +1,74 @@
+module top_module(
+    input clk,
+    input areset,    // Freshly brainwashed Lemmings walk left.
+    input bump_left,
+    input bump_right,
+    input ground,
+    input dig,
+    output walk_left,
+    output walk_right,
+    output aaah,
+    output digging ); 
+
+    parameter LEFT=3'b0, RIGHT=3'b001, FALL_L=3'b010, FALL_R=3'b011, DIG_L=3'b100, DIG_R=3'b101;
+    reg [2:0]state, next_state;
+
+    always @(*) begin
+        // State transition logic
+        next_state = state;
+        if(!ground) begin
+            if(state == LEFT || state == DIG_L)
+                next_state = FALL_L;
+            else if(state == RIGHT || state == DIG_R)
+                next_state = FALL_R;
+        end
+        else if(dig && state != FALL_L && state != FALL_R)begin
+            if(state == LEFT)
+                next_state = DIG_L;
+            else if(state == RIGHT)
+                next_state = DIG_R;
+        end
+        else begin
+            if(state == FALL_L) begin
+                next_state = LEFT;
+            end
+            else if(state == FALL_R)begin
+                next_state = RIGHT;
+            end
+            else if(state == DIG_L)begin
+                next_state = DIG_L;
+            end
+            else if(state == DIG_R)begin
+                next_state = DIG_R;
+            end
+            else begin
+                case (state)
+                    LEFT: 
+                        next_state = (bump_left)? RIGHT : LEFT;
+                    RIGHT:
+                        next_state = (bump_right)? LEFT : RIGHT;
+                endcase
+            end
+        end
+    end
+
+    always @(posedge clk, posedge areset) begin
+        // State flip-flops with asynchronous reset
+        if(areset)begin
+            state <= LEFT;
+        end
+        else begin
+            state <= next_state;
+        end
+    end
+
+    // Output logic
+    // assign walk_left = (state == ...);
+    // assign walk_right = (state == ...);
+    assign walk_left  = (state == LEFT);
+    assign walk_right = (state == RIGHT);
+    assign aaah = (state == FALL_L || state == FALL_R);
+    assign digging = (state == DIG_L || state == DIG_R);
+
+
+endmodule

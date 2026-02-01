@@ -1,0 +1,35 @@
+module top_module (
+    input clk,
+    input [2:0] y,
+    input x,
+    output Y0,
+    output z
+);
+    parameter S000 = 3'b000, S001 = 3'b001, S010 = 3'b010, S011 = 3'b011,
+              S100 = 3'b100;
+    reg [2:0]next_state;
+    always@(*)begin
+        case(y)
+            S000: begin
+                next_state = (x == 1)? S001 : S000;
+            end
+            S001: begin
+                next_state = (x == 1)? S100 : S001;
+            end
+            S010: begin
+                next_state = (x == 1)? S001 : S010;
+            end
+            S011: begin
+                next_state = (x == 1)? S010 : S001;
+            end
+            S100: begin
+                next_state = (x == 1)? S100 : S011;
+            end
+            default: next_state = S000;
+        endcase
+    end
+    
+
+    assign z = (y == S011 || y == S100);
+    assign Y0 = next_state[0];
+endmodule

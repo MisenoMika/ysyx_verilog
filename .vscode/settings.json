@@ -1,0 +1,6 @@
+{
+    "verilog.linting.enabled": true,
+    "verilog.linting.linter": "iverilog",
+    "verilog.linting.iverilog.arguments": "-Wall -tnull -g2012",
+    "verilog.linting.run": "onSave"
+}

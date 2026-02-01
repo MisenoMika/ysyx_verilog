@@ -1,0 +1,95 @@
+module Mt2015_q4a (input x, input y, output z);
+    assign z = (x^y) & x;
+endmodule
+
+module Mt2015_q4b( input x, input y, output z );
+    assign z = (!x&!y) | (x&y) ;
+endmodule
+
+module popcount( 
+    input [3:0] in,
+    output [2:0] out_both,
+    output [3:1] out_any,
+    output [3:0] out_different );
+    assign out_both = { (in[3]&in[2]), (in[1]&in[2]), (in[0]&in[1]) };
+    assign out_any = {(in[3] | in[2]), (in[2] | in[1]), (in[1] | in[0])};
+    assign out_different = {~(in[3] ^ in[0]), ~(in[2] ^ in[3]), ~(in[1] ^ in[2]), ~(in[0] ^ in[1])};
+endmodule
+module popcount_solution (
+	input [3:0] in,
+	output [2:0] out_both,
+	output [3:1] out_any,
+	output [3:0] out_different
+);
+
+	// Use bitwise operators and part-select to do the entire calculation in one line of code
+	// in[3:1] is this vector:   					 in[3]  in[2]  in[1]
+	// in[2:0] is this vector:   					 in[2]  in[1]  in[0]
+	// Bitwise-OR produces a 3 bit vector.			   |      |      |
+	// Assign this 3-bit result to out_any[3:1]:	o_a[3] o_a[2] o_a[1]
+
+	// Thus, each output bit is the OR of the input bit and its neighbour to the right:
+	// e.g., out_any[1] = in[1] | in[0];	
+	// Notice how this works even for long vectors.
+	assign out_any = in[3:1] | in[2:0];
+
+	assign out_both = in[2:0] & in[3:1];
+	
+	// XOR 'in' with a vector that is 'in' rotated to the right by 1 position: {in[0], in[3:1]}
+	// The rotation is accomplished by using part selects[] and the concatenation operator{}.
+	assign out_different = in ^ {in[0], in[3:1]};
+	
+endmodule
+
+多路选择器
+module multiplexer (
+	input clk,
+	input [7:0] d,
+	input [1:0] sel,
+	output reg [7:0] q
+);
+	wire [7:0] o1, o2, o3;		// output of each my_dff8
+	
+	// Instantiate three my_dff8s
+	my_dff8 d1 ( clk, d, o1 );
+	my_dff8 d2 ( clk, o1, o2 );
+	my_dff8 d3 ( clk, o2, o3 );
+
+	// This is one way to make a 4-to-1 multiplexer
+	always @(*)		// Combinational always block
+		case(sel)
+			2'h0: q = d;
+			2'h1: q = o1;
+			2'h2: q = o2;
+			2'h3: q = o3;
+		endcase
+
+endmodule
+
+module top_module (
+    input c,
+    input d,
+    output [3:0] mux_in
+); 
+	assign mux_in[0] = ~c&~d;
+	assign mux_in[1] = c&~d;
+	assign mux_in[2] = c&d;
+	assign mux_in[3] = ~c&d;
+endmodule
+module mux_4to1(
+    input [3:0] a,
+    input [1:0]sel,
+    output out
+);
+    reg [1:0]
+    always @(*) begin
+        assign m = (a[0])? 2'b00: (a[1])? 2'b01: (a[2])? 2'b11: 2'b10;
+		case (m)
+            2'b00: if(sel == 2'b10) out = 1;else out = 0;
+			2'b01: if(sel == 2'b00) out = 1;else out = 0;
+			2'b11: if(sel == 2'b00 | sel == 2'b11) out = 1;else out = 0;
+			2'b10: if(sel == 2'b00 | sel == 2'b10) out = 1;else out = 0;
+			default: out = 0;
+		endcase
+	end
+	endmodule

@@ -1,0 +1,53 @@
+module top_module (
+    input clk,
+    input reset,   // Synchronous reset
+    input s,
+    input w,
+    output z
+);
+    parameter A = 4'b0000, S1 = 4'b0001, S0 = 4'b0010, S11 = 4'b0011, S01 = 4'b0100, S10 = 4'b0101, DONE = 4'b0110, 
+        START = 4'b0111, S00 = 4'b1000;
+    reg [3:0]state, next_state;
+    always @(*)begin
+        case(state)
+            A: begin
+                next_state = s ? START : A;
+            end
+            START: begin
+                next_state = w ? S1 : S0;
+            end
+            S1: begin
+                next_state = w ? S11 : S10;
+            end
+            S0: begin
+                next_state = w ? S01 : S00;
+            end
+            S00: begin
+                next_state = START;
+            end
+            S11: begin
+                next_state = w ? START : DONE;
+            end
+            S01: begin
+                next_state = w ? DONE : START;
+            end
+            S10: begin
+                next_state = w ? DONE : START;
+            end
+            DONE: begin
+                next_state = w ? S1 : S0;
+            end
+        endcase
+    end
+
+    always @(posedge clk) begin
+        if (reset) begin
+            state <= A;
+        end 
+        else begin
+            state <= next_state;
+        end
+    end
+
+    assign z = (state == DONE);
+endmodule

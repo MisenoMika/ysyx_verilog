@@ -1,0 +1,132 @@
+module top_module(
+    input  clk,
+    input  reset,
+    input  ena,
+    output reg pm,
+    output [7:0] hh,
+    output [7:0] mm,
+    output [7:0] ss
+);
+
+    wire sec_carry;
+    wire min_carry;
+    wire hour_carry;
+
+    //-------------------------
+    // 秒计数器 00–59
+    //-------------------------
+    bcd_counter_60 sec_counter (
+        .clk(clk),
+        .reset(reset),
+        .ena(ena),
+        .bcd(ss),
+        .carry(sec_carry)
+    );
+
+    //-------------------------
+    // 分钟计数器 00–59
+    //-------------------------
+    bcd_counter_60 min_counter (
+        .clk(clk),
+        .reset(reset),
+        .ena(sec_carry),
+        .bcd(mm),
+        .carry(min_carry)
+    );
+
+    //-------------------------
+    // 小时计数器 01–12（12 小时制）
+    //-------------------------
+    hour_counter_12 hour_counter (
+        .clk(clk),
+        .reset(reset),
+        .ena(min_carry),
+        .bcd(hh),
+        .carry(hour_carry)
+    );
+
+    //-------------------------
+    // AM/PM 翻转
+    //-------------------------
+    always @(posedge clk) begin
+        if (reset)
+            pm <= 0;          // 默认 AM
+        else if (hour_carry)
+            pm <= ~pm;        // 每次从 11→12 翻转 AM/PM
+    end
+
+endmodule
+
+
+module bcd_counter_60(
+    input clk,
+    input reset,
+    input ena,
+    output reg [7:0] bcd,
+    output reg carry
+);
+
+    wire [3:0] lo = bcd[3:0];
+    wire [3:0] hi = bcd[7:4];
+
+    always @(posedge clk) begin
+        if (reset) begin
+            bcd <= 8'h00;
+            carry <= 0;
+        end
+        else if (ena) begin
+            carry <= 0;
+
+            if (lo == 9) begin
+                bcd[3:0] <= 0;
+                if (hi == 5) begin
+                    bcd[7:4] <= 0;
+                    carry <= 1;      // 59 → 00
+                end else begin
+                    bcd[7:4] <= hi + 1;
+                end
+            end else begin
+                bcd[3:0] <= lo + 1;
+            end
+        end
+    end
+
+endmodule
+
+
+module hour_counter_12(
+    input clk,
+    input reset,
+    input ena,
+    output reg [7:0] bcd,
+    output reg carry
+);
+
+    wire [3:0] lo = bcd[3:0];
+    wire [3:0] hi = bcd[7:4];
+
+    always @(posedge clk) begin
+        if (reset) begin
+            bcd <= 8'h12;     // 初始 12:xx:xx
+            carry <= 0;
+        end
+        else if (ena) begin
+            carry <= 0;
+
+            // 特殊情况：12 → 01
+            if (bcd == 8'h12) begin
+                bcd <= 8'h01;
+                carry <= 1;   // 12 → 1 时触发 AM/PM 翻转
+            end
+
+            // 一般情况：01–11
+            else if (lo == 9) begin
+                bcd[3:0] <= 0;
+                bcd[7:4] <= hi + 1;
+            end else begin
+                bcd[3:0] <= lo + 1;
+            end
+        end
+    end
+
+endmodule
