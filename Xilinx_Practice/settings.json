@@ -1,0 +1,7 @@
+{
+    "ctags-companion.command": "ctags -R --fields=+nKz --langmap=Verilog,SystemVerilog:+.v -R rtl E:\\ysyx_verilog\\Xilinx_Practice",
+    "verilog.linting.enabled": true,
+    "verilog.linting.linter": "iverilog",
+    "verilog.linting.iverilog.arguments": ["-Wall", "-tnull", "-g2012"],
+    "verilog.linting.run": "onSave"
+}

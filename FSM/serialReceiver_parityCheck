@@ -69,7 +69,8 @@ module top_module(
                 count <= count + 1'd1;//计数逻辑一定要能够反映题目要求，即计我们需要数的一共11位数字，
                 //本来写的条件是if(state == data)，但这样会有时序错误（在组合逻辑判断出即将跳出时count仍然错误执行+1）
                 //Update:其实上面说的不绝对，也可以通过state==DATA来实现，总之关键是搞清楚每个状态的临界状态是不是正确的
-                //不过通过next_state来判断会更直观一些（DATA期间总共需要记录10次数据(8位data,1位parity_check,1位stop_check)，count几次即记录几次），不容易出错，建议以后还是这么写
+                //不过通过next_state来判断会更直观一些（DATA期间总共需要记录10次数据(8位data,1位parity_check,1位stop_check)，count几次即记录几次），
+                //不容易出错，建议以后还是这么写
             end
             else begin
                 count <= 0;

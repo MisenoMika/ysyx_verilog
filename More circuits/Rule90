@@ -27,7 +27,7 @@ endmodule
 
 //以下是答案给的方法
 
-module top_module(
+module top_module_(
 	input clk,
 	input load,
 	input [511:0] data,
