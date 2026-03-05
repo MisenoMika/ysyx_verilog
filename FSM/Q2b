@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 module top_module (
     input [5:0] y,
     input w,
@@ -7,3 +8,14 @@ module top_module (
     assign Y1 = (y[0] & w);
     assign Y3 = (y[1] & ~w) | (y[2] & ~w) | (y[4] & ~w) | (y[5] & ~w);
 endmodule
+=======
+module top_module (
+    input [5:0] y,
+    input w,
+    output Y1,
+    output Y3
+);
+    assign Y1 = (y[0] & w);
+    assign Y3 = (y[1] & ~w) | (y[2] & ~w) | (y[4] & ~w) | (y[5] & ~w);
+endmodule
+>>>>>>> 3fcdccf8d5000da2c17e376ce41bbd4e2d8d9cb0

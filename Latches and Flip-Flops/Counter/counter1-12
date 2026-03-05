@@ -1,0 +1,57 @@
+module top_module(
+    input clk,
+    input reset,      // synchronous active-high reset
+    input enable,
+    output [3:0] Q,
+    output c_enable,
+    output c_load,
+    output [3:0] c_d
+);
+	reg load_reg;
+    reg [3:0] d_reg;
+    wire [3:0] Q_int;
+    always @(*) begin
+        if (reset) begin
+            load_reg = 1;
+            d_reg = 4'b0001;   
+        end else if (Q_int == 4'd12 && enable) begin
+            load_reg = 1;
+            d_reg = 4'b0001;   
+        end else begin
+            load_reg = 0;
+            d_reg = 4'b0000;  
+        end
+    end
+
+    assign c_enable = enable;
+    assign c_load   = load_reg;
+    assign c_d      = d_reg;
+
+    count4 u_count4(
+        .clk(clk),
+        .enable(c_enable),
+        .load(c_load),
+        .d(c_d),
+        .Q(Q_int)
+    );
+
+    assign Q = Q_int;
+
+endmodule
+
+module count4(
+    input clk,
+    input enable,
+    input load,
+    input [3:0] d,
+    output reg [3:0] Q
+);
+    always @(posedge clk) begin
+        if (load) begin
+            Q <= d; // 加载优先级高于使能
+        end else if (enable) begin
+            Q <= Q + 1'b1; // 使能有效时递增
+        end
+        // 否则保持原状态
+    end
+endmodule

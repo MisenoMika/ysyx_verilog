@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 module top_module( 
     input [99:0] a, b,
     input cin,
@@ -18,4 +19,26 @@ module adder(
     output cout,sum);
     assign sum = x^y^cin;
     assign cout = ( (x&y)|(x&cin)|(y&cin) );
+=======
+module top_module( 
+    input [99:0] a, b,
+    input cin,
+    output [99:0] cout,
+    output [99:0] sum );
+    adder adders[99:0](
+        .x(a),
+        .y(b),
+        .cin( {cout[98:0], cin} ),
+        .cout(cout),
+        .sum(sum)
+    );
+endmodule
+
+
+module adder(
+    input x, y,cin,
+    output cout,sum);
+    assign sum = x^y^cin;
+    assign cout = ( (x&y)|(x&cin)|(y&cin) );
+>>>>>>> 3fcdccf8d5000da2c17e376ce41bbd4e2d8d9cb0
 endmodule

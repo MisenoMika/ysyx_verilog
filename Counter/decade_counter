@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 module counter_decade (
     input clk,
     input reset,        // Synchronous active-high reset
@@ -14,3 +15,21 @@ module counter_decade (
         end
     end
 endmodule
+=======
+module counter_decade (
+    input clk,
+    input reset,        // Synchronous active-high reset
+    output reg [3:0] q);
+    always @(posedge clk)begin
+        if(~reset && q < 9)begin
+            q <= q+1;     
+        end
+        else if(~reset && q>=9)begin
+            q <= q+7;
+        end
+        else if(reset)begin
+            q <= 0;
+        end
+    end
+endmodule
+>>>>>>> 3fcdccf8d5000da2c17e376ce41bbd4e2d8d9cb0

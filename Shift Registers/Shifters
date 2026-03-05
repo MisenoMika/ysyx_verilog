@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 module top_module (
     input clk,
     input resetn,   // synchronous reset
@@ -23,4 +24,31 @@ module Dff_ (
             q <= d;
         end
     end
+=======
+module top_module (
+    input clk,
+    input resetn,   // synchronous reset
+    input in,
+    output out);
+    wire [3:0] q;
+    Dff_ x1(clk, ~resetn, in, q[0]);
+    Dff_ x2(clk, ~resetn, q[0], q[1]);
+    Dff_ x3(clk, ~resetn, q[1], q[2]);
+    Dff_ x4(clk, ~resetn, q[2], q[3]);
+    assign out = q[3];
+endmodule
+
+module Dff_ (
+    input clk,
+    input reset,
+    input d,
+    output reg q
+);
+    always @(posedge clk)begin
+        if(reset) q <= 0;
+        else begin
+            q <= d;
+        end
+    end
+>>>>>>> 3fcdccf8d5000da2c17e376ce41bbd4e2d8d9cb0
 endmodule

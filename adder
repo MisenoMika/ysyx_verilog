@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 module fulladder( 
     input a, b, cin,
     output cout, sum );
@@ -17,3 +18,20 @@ module adder_100bi (
 	assign {cout, sum} = a+b+cin;
 
 endmodule
+=======
+module fulladder( 
+    input a, b, cin,
+    output cout, sum );
+	assign sum = a^b^cin;
+    assign cout = (a&b) | (a&cin) | (b&cin);
+endmodule
+
+module adder3bits(
+    input [2:0] a, b,
+    input cin,
+    output cout,
+    output[2:0] sum);
+
+    assign sum = 
+    endmodule
+>>>>>>> 3fcdccf8d5000da2c17e376ce41bbd4e2d8d9cb0

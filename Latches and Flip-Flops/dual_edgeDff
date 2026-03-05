@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 module top_module (
     input clk,
     input d,
@@ -20,3 +21,27 @@ module top_module (
         end
     end
 endmodule
+=======
+module top_module (
+    input clk,
+    input d,
+    output reg q
+);
+    reg q1, q2;
+    always @(posedge clk)begin
+        q1 <= d;
+    end
+    always @(negedge clk)begin
+        q2 <= d;
+    end
+    //注意q1变化后，clk为高电平，故clk为高电平时输出q1，q2同理
+    always @(*)begin 
+        if(clk) begin
+            q = q1;
+        end
+        else begin
+            q = q2;
+        end
+    end
+endmodule
+>>>>>>> 3fcdccf8d5000da2c17e376ce41bbd4e2d8d9cb0

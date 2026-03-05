@@ -1,0 +1,10 @@
+module Slow_decade_counter (
+    input clk,
+    input slowena,
+    input reset,
+    output reg [3:0] q);
+    always @(posedge clk)begin
+        if(slowena && ~reset)q <=(q<9)? q+1:0;
+        else if(reset) q <= 0;
+    end
+endmodule

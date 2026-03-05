@@ -1,0 +1,85 @@
+module top_module(
+    input clk,
+    input reset,
+    input ena,
+    output  pm,
+    output [7:0] hh,
+    output [7:0] mm,
+    output [7:0] ss); 
+    reg [3:1]en;
+    //bcdcount10_dig Scounter0 (clk, reset, ena, ss[3:0]);//个位Second
+    bcdcount60_dig Scounter1 (clk, reset, ena, ss[7:0]);//十位Second
+    bcdcount60_dig Mcounter0 (clk, reset, en[1], mm[7:0]);//个位Minute
+    //bcdcount60_dig Mcounter1 (clk, reset, en[3], mm[7:4]);//十位Minute
+    bcdcount12_digHours Hcounter0 (clk, reset, en[2], hh[7:0], pm);//个位Hour
+    //bcdcount2_dig Hcounter1 (clk, reset, hh[7:0], en[5], hh[7:4]);//十位Hour
+
+    always @(posedge clk) begin 
+        if (reset) begin
+            en[2:1] <= 0;
+        end 
+
+        else if(ena)begin
+            //en[1] <= (ss[3:0] == 4'd8) ? 1'b1 : 1'b0;//十位Second
+            //en[2] <= (ss[7:4] == 4'd5 && ss[3:0] == 4'd8) ? 1'b1 : 1'b0;//个位Minute
+            en[1] <= (mm[3:0] == 4'd9 && ss[7:4] == 4'd5 && ss[3:0] == 4'd8) ? 1'b1 : 1'b0;//十位Minute
+            en[2] <= (mm[7:4] == 4'd5 && mm[3:0] == 4'd9 && ss[7:4] == 4'd5 && ss[3:0] == 4'd8) ? 1'b1 : 1'b0;//个位hour
+            //en[5] <= (hh[3:0] == 4'd9 && mm[7:4] == 4'd5 && mm[3:0] == 4'd9 && ss[7:4] == 4'd5 && ss[3:0] == 4'd8) ? 1'b1 : 1'b0;//十位hour
+        end
+    end
+endmodule
+
+
+/*module bcdcount10_dig (
+	input clk,
+	input reset,
+	input enable,
+	output reg [3:0] Q
+);
+    always @(posedge clk)begin
+        if(reset)  Q <= 4'd0;
+        else if(~reset  && enable && Q==4'd9) Q <= 4'd0;  // 先清零，后加1
+        else if(~reset  && enable && Q<4'd9) Q <= Q + 4'd1;
+    end
+endmodule*/
+
+
+module bcdcount60_dig (
+	input clk,
+	input reset,
+	input enable,
+	output reg [7:0] Q
+);
+    always @(posedge clk)begin
+        if(reset) Q <= 8'd0;
+        else if(~reset  && enable && Q=={4'd5, 4'd9}) Q <= 8'd0;  // 先清零，后加1
+        else begin
+            if(~reset && enable && Q[3:0] == 4'd9) Q <= {Q[7:4]+4'd1, 4'd0};
+            else if(~reset && enable && Q<{4'd5, 4'd9}) Q <= Q + 8'd1;
+        end
+    end
+endmodule
+
+
+module bcdcount12_digHours (
+	input clk,
+	input reset,
+	input enable,
+    output reg [7:0] Q,
+    output reg pm
+);
+    always @(posedge clk)begin
+        if(reset) begin
+            Q <= {4'd1, 4'd2};
+            pm <= 0;
+        end
+        if(enable && Q == {4'd1, 4'd1}) pm <= ~pm;
+        if(enable && Q == {4'd1, 4'd2}) begin 
+            Q <= {4'd0, 4'd1};
+        end 
+        else begin
+            if(~reset&& enable && Q=={4'd0, 4'd9} ) Q <= {4'd1, 4'd0};  // 先清零，后加1
+            else if(~reset && enable) Q <= Q + 8'd1;
+        end
+    end
+endmodule

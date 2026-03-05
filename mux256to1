@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 module top_module (
 	input c,
 	input d,
@@ -31,3 +32,20 @@ module top_module1 (
         //else q[7:0] <= 0;
 	 end
 endmodule
+=======
+module mux256to1( 
+    input [1023:0] in,
+    input [7:0] sel,
+    output [3:0] out );
+    
+    wire [3:0] arr[255:0];
+    genvar i;
+    generate
+        for(i=0; i<256; i=i+1) begin : pack
+            assign arr[i] = in[4*i+3 : 4*i];
+        end
+    endgenerate
+    assign out = arr[sel];
+    
+endmodule
+>>>>>>> 3fcdccf8d5000da2c17e376ce41bbd4e2d8d9cb0

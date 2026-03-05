@@ -1,0 +1,103 @@
+module top_module (
+    input clk,
+    input reset,
+    output reg OneHertz,
+    output [2:0] c_enable
+); 
+	reg enable100, enable1000;
+    wire [3:0] Q10, Q100, Q1000;
+    bcdcount counter0 (clk, reset, 1'b1, Q10);
+    bcdcount counter1 (clk, reset, enable100, Q100);
+    bcdcount counter2 (clk, reset, enable1000, Q1000);
+    always @(*) begin
+        if(Q10 == 4'd9)begin
+            enable100 = 1;
+        end 
+        else begin
+            enable100 = 0;
+        end
+        if(Q100 == 4'd9 && Q10 == 4'd9)begin
+            enable1000 = 1;
+        end
+        else begin
+            enable1000 = 0;
+        end
+    end
+    assign c_enable = {enable1000, enable100, 1'b1};
+    always @(Q10)begin
+       OneHertz <= (Q1000 == 4'd9 && Q100 == 4'd9 && Q10 == 4'd9)? 1 : 0; 
+    end
+endmodule
+
+module top_module1 (
+    input clk,
+    input reset,   // Synchronous active-high reset
+    output reg [3:1] ena,
+    output [15:0] q);
+
+        bcdcount icounter0 (clk, reset, 1'b1, q[3:0]);
+        bcdcount icounter1 (clk, reset, ena[1], q[7:4]);
+        bcdcount icounter2 (clk, reset, ena[2], q[11:8]);
+        bcdcount icounter3 (clk, reset, ena[3], q[15:12]);
+    always @(*) begin
+        if (reset && clk) begin
+            ena[1] = 1'b0;
+            ena[2] = 1'b0;
+            ena[3] = 1'b0;
+        end else begin
+            ena[1] = (q[3:0] == 4'd9) ? 1'b1 : 1'b0;
+            ena[2] = (q[7:4] == 4'd9 && ena[1] == 1'b1) ? 1'b1 : 1'b0;
+            ena[3] = (q[11:8] == 4'd9 && ena[2] == 1'b1) ? 1'b1 : 1'b0;
+        end
+    end
+endmodule
+
+module bcdcount (
+	input clk,
+	input reset,
+	input enable,
+	output reg [3:0] Q
+);
+    always @(posedge clk)begin
+        if(reset)Q <= 0;
+        else if(~reset && enable && Q==9)Q <= 0;
+        else if(~reset && enable && Q<10)Q <= Q+1;
+    end
+endmodule
+
+module top_module2 (//更好的版本
+    input clk,
+    input reset,   // Synchronous active-high 
+    output reg [3:1] ena, 
+    output [15:0] q);
+    
+    bcdcount_4dig icounter0 (clk, reset, 1'b1,    q[3:0]);
+    bcdcount_4dig icounter1 (clk, reset, ena[1],  q[7:4]);
+    bcdcount_4dig icounter2 (clk, reset, ena[2],  q[11:8]);
+    bcdcount_4dig icounter3 (clk, reset, ena[3],  q[15:12]);
+    always @(posedge clk) begin 
+        if (reset) begin
+            ena[1] <= 1'b0;
+            ena[2] <= 1'b0;
+            ena[3] <= 1'b0;
+        end else begin
+            ena[1] <= (q[3:0] == 4'd8) ? 1'b1 : 1'b0;
+            ena[2] <= (q[7:4] == 4'd9 && q[3:0] == 4'd8) ? 1'b1 : 1'b0;
+            ena[3] <= (q[11:8] == 4'd9 && q[7:4] == 4'd9 && q[3:0] == 4'd8) ? 1'b1 : 1'b0;
+        end
+    end
+    //假设周期为1时，q==8，则下个周期ena==1，q==9，再下一个周期ena==0,q==0，因此ena变化的条件为最低位的q==8
+endmodule
+
+module bcdcount_4dig (
+	input clk,
+	input reset,
+	input enable,
+	output reg [3:0] Q
+);
+    always @(posedge clk)begin
+        if(reset) Q <= 4'd0;
+        else if(~reset && enable && Q==4'd9) Q <= 4'd0;  // 先清零，后加1
+        else if(~reset && enable && Q<4'd10) Q <= Q + 4'd1;
+    end
+endmodule

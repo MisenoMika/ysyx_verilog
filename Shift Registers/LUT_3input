@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 module top_module (
     input clk,
     input enable,
@@ -66,4 +67,39 @@ module top_module_ (
 	
 	
 	
+=======
+module top_module (
+    input clk,
+    input enable,
+    input S,
+    input A, B, C,
+    output  Z ); 
+    wire [7:0] q;
+    wire [2:0]sel = {A, B, C};
+    genvar i;
+    generate
+        for(i=0; i<8; i=i+1)begin : loop
+            if(i==0)begin
+                Dff_ registers(clk, enable, S, q[i]);
+            end
+            else begin
+                Dff_ registers_(clk, enable, q[i-1], q[i]);
+            end
+        end
+    endgenerate
+  
+    assign Z = q[sel];
+    
+endmodule
+
+module Dff_ (
+    input clk,
+    input enable,
+    input d,
+    output reg q
+);
+    always @(posedge clk)begin
+        if(enable) q <= d;
+    end
+>>>>>>> 3fcdccf8d5000da2c17e376ce41bbd4e2d8d9cb0
 endmodule

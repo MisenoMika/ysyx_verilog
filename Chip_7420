@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 module top_module ( 
     input p1a, p1b, p1c, p1d,
     output p1y,
@@ -7,3 +8,14 @@ module top_module (
     assign p2y = ~(p2a & p2b & p2c & p2d);
 
 endmodule
+=======
+module top_module ( 
+    input p1a, p1b, p1c, p1d,
+    output p1y,
+    input p2a, p2b, p2c, p2d,
+    output p2y );
+    assign p1y = ~(p1a & p1b & p1c & p1d);
+    assign p2y = ~(p2a & p2b & p2c & p2d);
+
+endmodule
+>>>>>>> 3fcdccf8d5000da2c17e376ce41bbd4e2d8d9cb0
