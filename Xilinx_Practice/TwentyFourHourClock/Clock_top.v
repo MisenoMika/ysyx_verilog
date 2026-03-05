@@ -1,5 +1,5 @@
 module Clock_top#(
-    CLK_CYCLES = 32'd50_000 * 1_00// 0.1s
+    CLK_CYCLES = 32'd50_000 * 1_000// 1s
 )(
     input clk,
     input reset,
