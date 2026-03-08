@@ -3,12 +3,12 @@ module KeyDecoder #(
 )(
     input clk,
     input reset,
-    input key_in,
+    input key_S1,
     output key_out
 );
     parameter IDLE = 3'b000, WAIT = 3'b010, CONFIRM = 3'b100;
     reg [2:0] state, next_state;
-    reg [31:0]counter;
+    reg [31:0] counter;
     reg key_ff1;
     wire key_tmp;
     always@(*) begin
@@ -55,7 +55,7 @@ module KeyDecoder #(
             key_ff1 <= 1'b1;
         end 
         else begin
-            key_ff1 <= key_in;
+            key_ff1 <= key_S1;
             state <= next_state;
             if(state == WAIT) begin
                 counter <= counter + 1'd1;

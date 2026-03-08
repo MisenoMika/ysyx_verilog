@@ -32,7 +32,7 @@ module Clock_top(
     reg [3:0] curDigit;//当前位显示数字
     reg [31:0] clkdivCounter;
     reg [31:0] clkdivCounter2;
-    TwelvwHourClock clock_inst (
+    TwelveHourClock clock_inst (
         .clk(clk),
         .reset(reset),
         .enable(enable),
@@ -148,7 +148,7 @@ module Clock_top(
 
 endmodule
 
-module TwelvwHourClock(
+module TwelveHourClock(
     input clk,
     input reset,
     input enable,

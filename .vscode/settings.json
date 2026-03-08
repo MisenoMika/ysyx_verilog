@@ -1,6 +1,10 @@
 {
     "verilog.linting.enabled": true,
-    "verilog.linting.linter": "iverilog",
-    "verilog.linting.iverilog.arguments": "-Wall -tnull -g2012",
+    "verilog.linting.linter": "xvlog",
+    "verilog.linting.xvlog.arguments": "-Wall -tnull -g2012",
+    "verilog.instancePortAutoConnect": true,
+    "verilog.autoComplete": true,
     "verilog.linting.run": "onSave"
+
+
 }
