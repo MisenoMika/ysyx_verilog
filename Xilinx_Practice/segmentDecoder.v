@@ -131,11 +131,12 @@ module SegmentDecoder(
                     8'd14: seg = 7'b0000110; // E
                     8'd15: seg = 7'b0001110; // F
                     
-                    8'd16: seg = 7'b0001001; // H
-                    8'd17: seg = 7'b0000111; // L
-                    8'd19: seg = 7'b1000111; // P
-                    8'd20: seg = 7'b0001100; // U
-                    
+                    8'd17: seg = 7'b0001001; // H
+                    8'd21: seg = 7'b1000111; // L
+                    8'd24: seg = 7'b0100011; // o
+                    8'd25: seg = 7'b1000111; // P
+                    8'd29: seg = 7'b0001100; // U
+                    "_": seg = 7'b0111111; // "--"
                     default: seg = 7'b1111111; // all off
                 endcase
             end

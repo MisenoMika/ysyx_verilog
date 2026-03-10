@@ -18,12 +18,11 @@ module Uart_rx #(
     reg [3:0] bit_cnt;
     reg [DATA_BITS - 1:0] data_buf;
     reg rx_d0, rx_d1;
-    reg parity_bit;
     
     wire data_xor = ^data_buf;
     wire parity_ok = (IS_PARITY == 0) ? 1'b1 : 
-                     (IS_PARITY == 1) ? (parity_bit ^ data_xor) :  // ODD
-                                        ~(parity_bit ^ data_xor);  // EVEN
+                     (IS_PARITY == 1) ? (rx_d1 ^ data_xor) :  // ODD
+                                        ~(rx_d1 ^ data_xor);  // EVEN
     // 两级寄存器同步输入信号，消除亚稳态
     always @(posedge clk) begin
         if (reset) begin
@@ -102,7 +101,6 @@ module Uart_rx #(
             clk_cnt    <= 32'd0;
             bit_cnt    <= 4'd0;
             data_buf   <= 8'd0;
-            parity_bit <= 1'b0;
             o_data     <= 8'd0;
             o_valid    <= 1'b0;
         end else begin
@@ -115,7 +113,7 @@ module Uart_rx #(
                     data_buf <= 8'd0;
                 end
                 START: begin
-                    if (clk_cnt == BAUD_BIT - 1)
+                    if (clk_cnt == BAUD_BIT/2 - 1)
                         clk_cnt <= 32'd0;  
                     else
                         clk_cnt <= clk_cnt + 1'b1;
@@ -134,9 +132,6 @@ module Uart_rx #(
                     end
                 end
                 PARITY: begin
-                    if (clk_cnt == BAUD_BIT - 1) begin
-                        parity_bit <= rx_d1;
-                    end
                     if (clk_cnt == BAUD_BIT - 1)
                         clk_cnt <= 32'd0;
                     else

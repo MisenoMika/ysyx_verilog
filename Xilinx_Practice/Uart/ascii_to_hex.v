@@ -1,19 +1,20 @@
 module ascii_to_hex(
-    input [7:0] c,
-    output reg [7:0] hex
+    input [7:0] ascii_in,
+    output reg [7:0] o_hex
 );
+
     always @(*) begin
-        if (c >= "0" && c <= "9")  begin
-            hex = c - "0";
+        if (ascii_in >= "0" && ascii_in <= "9")  begin
+            o_hex = ascii_in - "0"; // 0 < o_hex < 9
         end
-        else if (c >= "A" && c <= "F") begin
-            hex = c - "A" + 4'd10;
+        else if (ascii_in >= "A" && ascii_in <= "Z") begin
+            o_hex = ascii_in - "A" + 8'd10;
         end
-        else if (c >= "a" && c <= "f") begin
-            hex = c - "a" + 4'd10;
+        else if (ascii_in >= "a" && ascii_in <= "z") begin
+            o_hex = ascii_in - "a" + 8'd10;
         end
         else begin
-            hex = 4'h0;
+            o_hex = ascii_in; // 非法输入直接输出原值
         end                          
     end
 endmodule

@@ -1,10 +1,10 @@
 module SegmentDecoder(
     input clk,
     input reset,
-    input [31:0]load,
+    input [63:0]load,
     input [7:0] DP_in,
     input [7:0] mode, // 1显示数字，0显示图形
-    input [31:0] graphData,
+    input [63:0] graphData,
 
     output SEGA,
     output SEGB,
@@ -27,20 +27,20 @@ module SegmentDecoder(
 );
     reg [7:0] segcom;
     reg [6:0] seg;
-    wire [3:0] digit1, digit2, digit3, digit4,
+    wire [7:0] digit1, digit2, digit3, digit4,
               digit5, digit6, digit7, digit8;
     reg [3:0] segSel;//位选
-    reg [3:0] curDigit;//当前位显示数字
+    reg [7:0] curDigit;//当前位显示数字
     reg [31:0] clkdivCounter;
     //将32位二进制数拆分为8个十六进制数
-    assign digit1 = (mode[0])? load[3:0] : graphData[3:0];
-    assign digit2 = (mode[1])? load[7:4] : graphData[7:4];
-    assign digit3 = (mode[2])? load[11:8] : graphData[11:8];         
-    assign digit4 = (mode[3])? load[15:12] : graphData[15:12];   
-    assign digit5 = (mode[4])? load[19:16] : graphData[19:16];
-    assign digit6 = (mode[5])? load[23:20] : graphData[23:20];
-    assign digit7 = (mode[6])? load[27:24] : graphData[27:24];
-    assign digit8 = (mode[7])? load[31:28] : graphData[31:28];
+    assign digit1 = (mode[0] == 1'b1) ? load[7:0] : graphData[7:0];
+    assign digit2 = (mode[1] == 1'b1) ? load[15:8] : graphData[15:8];
+    assign digit3 = (mode[2] == 1'b1) ? load[23:16] : graphData[23:16];
+    assign digit4 = (mode[3] == 1'b1) ? load[31:24] : graphData[31:24];
+    assign digit5 = (mode[4] == 1'b1) ? load[39:32] : graphData[39:32];
+    assign digit6 = (mode[5] == 1'b1) ? load[47:40] : graphData[47:40];
+    assign digit7 = (mode[6] == 1'b1) ? load[55:48] : graphData[55:48];
+    assign digit8 = (mode[7] == 1'b1) ? load[63:56] : graphData[63:56];
 
     always @(posedge clk) begin
         if(clkdivCounter == 32'd5000)begin//5000（太低了会出现"鬼影"）
@@ -102,7 +102,7 @@ module SegmentDecoder(
             default: begin 
                 DP_out = 1'b1;
                 curDigit = 4'd0;
-                segcom = 8'b11111111; // all off
+                segcom = 8'b11111111; // off
             end
         endcase
     end
@@ -114,43 +114,51 @@ module SegmentDecoder(
         else begin
             if(mode[segSel-1] == 1'b1) begin
                 case (curDigit)
-                    4'd0: seg = 7'b1000000; // 0
-                    4'd1: seg = 7'b1111001; // 1
-                    4'd2: seg = 7'b0100100; // 2
-                    4'd3: seg = 7'b0110000; // 3
-                    4'd4: seg = 7'b0011001; // 4
-                    4'd5: seg = 7'b0010010; // 5
-                    4'd6: seg = 7'b0000010; // 6
-                    4'd7: seg = 7'b1111000; // 7
-                    4'd8: seg = 7'b0000000; // 8
-                    4'd9: seg = 7'b0010000; // 9
-                    4'd10: seg = 7'b0001000; // A
-                    4'd11: seg = 7'b0000011; // b
-                    4'd12: seg = 7'b1000110; // C
-                    4'd13: seg = 7'b0100001; // d
-                    4'd14: seg = 7'b0000110; // E
-                    4'd15: seg = 7'b0001110; // F
+                    8'd0: seg = 7'b1000000; // 0
+                    8'd1: seg = 7'b1111001; // 1
+                    8'd2: seg = 7'b0100100; // 2
+                    8'd3: seg = 7'b0110000; // 3
+                    8'd4: seg = 7'b0011001; // 4
+                    8'd5: seg = 7'b0010010; // 5
+                    8'd6: seg = 7'b0000010; // 6
+                    8'd7: seg = 7'b1111000; // 7
+                    8'd8: seg = 7'b0000000; // 8
+                    8'd9: seg = 7'b0010000; // 9
+                    8'd10: seg = 7'b0001000; // A
+                    8'd11: seg = 7'b0000011; // b
+                    8'd12: seg = 7'b1000110; // C
+                    8'd13: seg = 7'b0100001; // d
+                    8'd14: seg = 7'b0000110; // E
+                    8'd15: seg = 7'b0001110; // F
+                    
+                    8'd17: seg = 7'b0001001; // H
+                    8'd21: seg = 7'b1000111; // L
+                    8'd24: seg = 7'b0100011; // o
+                    8'd25: seg = 7'b1000111; // P
+                    8'd29: seg = 7'b0001100; // U
+                    "\"": seg = 7'b0111111; // "--"
+                    "_": seg = 7'b11110111; // "_"
                     default: seg = 7'b1111111; // all off
                 endcase
             end
             else begin
                 case(curDigit)
-                    4'd0: seg = 7'b1111111; // off
-                    4'd1: seg = 7'b0111111; // "--"
-                    4'd2: seg = 7'b1111111; // off
-                    4'd3: seg = 7'b1111111; // off
-                    4'd4: seg = 7'b1111111; // off
-                    4'd5: seg = 7'b1111111; // off
-                    4'd6: seg = 7'b1111111; // off
-                    4'd7: seg = 7'b1111111; // off
-                    4'd8: seg = 7'b1111111; // off
-                    4'd9: seg = 7'b1111111; // off
-                    4'd10: seg = 7'b1111111; // off
-                    4'd11: seg = 7'b1111111; // off
-                    4'd12: seg = 7'b1111111; // off
-                    4'd13: seg = 7'b1111111; // off
-                    4'd14: seg = 7'b1111111; // off
-                    4'd15: seg = 7'b1111111; // off
+                    8'd0: seg = 7'b1111111; // off
+                    8'd1: seg = 7'b0111111; // "--"
+                    8'd2: seg = 7'b1111111; // off
+                    8'd3: seg = 7'b1111111; // off
+                    8'd4: seg = 7'b1111111; // off
+                    8'd5: seg = 7'b1111111; // off
+                    8'd6: seg = 7'b1111111; // off
+                    8'd7: seg = 7'b1111111; // off
+                    8'd8: seg = 7'b1111111; // off
+                    8'd9: seg = 7'b1111111; // off
+                    8'd10: seg = 7'b1111111; // off
+                    8'd11: seg = 7'b1111111; // off
+                    8'd12: seg = 7'b1111111; // off
+                    8'd13: seg = 7'b1111111; // off
+                    8'd14: seg = 7'b1111111; // off
+                    8'd15: seg = 7'b1111111; // off
                     default: seg = 7'b1111111; // all off
                 endcase
             end
