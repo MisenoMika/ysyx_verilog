@@ -1,9 +1,9 @@
 module ledFlow#(
-    parameter CLK_LED = 32'd5_000;
+    parameter CLK_LED = 32'd5_000
     )(
     input clk,
     input reset,
-
+    input [7:0] data_in,
 
     output LD1,
     output LD2,
@@ -38,12 +38,12 @@ module ledFlow#(
     always@(posedge clk) begin
         if (reset) begin
             drive <= 4'd0;
-            leds <= 8'b11111110;
+            leds <= 8'b0000_0000;
         end 
         else begin
             if (drive == 4'd8) begin
                 drive <= 4'd0;
-                leds <= 8'b11111110;
+                leds <= data_in;
             end
             else if(enable)begin
                 drive <= drive + 1'b1;

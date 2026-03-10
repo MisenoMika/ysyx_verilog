@@ -23,12 +23,14 @@ module Clock_top#(
     output SEGCOM8
 );
     wire [7:0] ss, mm, hh;
-    wire [31:0] time_load;
-    wire [31:0] graphData; 
+    wire [63:0] time_load;
+    wire [63:0] graphData; 
     wire ena;
     reg [31:0]clkdivCounter;
-    assign time_load = {hh, 4'd0, mm, 4'd0, ss};
-    assign graphData = {4'd1, 4'd1, 4'd1, 4'd1, 4'd1, 4'd1, 4'd1, 4'd1};
+    assign time_load = {4'd0, hh[7:4], 4'd0, hh[3:0], 
+                        8'd0, 4'd0, mm[7:4], 4'd0, mm[3:0], 
+                        8'd0, 4'd0, ss[7:4], 4'd0, ss[3:0]};
+    assign graphData = {8'd1, 8'd1, 8'd1, 8'd1, 8'd1, 8'd1, 8'd1, 8'd1};
     assign ena = (clkdivCounter == CLK_CYCLES-1);
     always @(posedge clk) begin
         if (reset) begin
