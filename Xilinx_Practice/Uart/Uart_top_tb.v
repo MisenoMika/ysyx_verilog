@@ -10,16 +10,20 @@ module Uart_top_tb;
     reg clk;
     reg reset;
     reg i_uart_rx;
+    reg [3:0] key_in;
+    wire o_uart_tx;
     wire [7:0] leds;
-
     Uart_top #(
         .BAUD_RATE(BAUD_RATE_HZ),
         .CHECK_BIT(0),
-        .CLK_FREQ(CLK_FREQ_HZ)
+        .CLK_FREQ(CLK_FREQ_HZ),
+        .MODE(0)
     ) Uart_top_inst (
         .clk(clk),
         .reset(reset),
         .i_uart_rx(i_uart_rx),
+        .key_in(key_in),
+        .o_uart_tx(o_uart_tx),
         .leds(leds)
     );
 
@@ -45,11 +49,21 @@ module Uart_top_tb;
         end
     endtask
 
+    task transimit_string;
+        begin
+            key_in[0] = 1'b1;
+            #(CLK_FREQ_HZ/1000 * CLK_PERIOD_NS * 40);
+            key_in[0] = 1'b0;
+            #(CLK_FREQ_HZ/1000 * CLK_PERIOD_NS * 40);
+            key_in[0] = 1'b1;
+        end
+    endtask
+
     initial begin
         clk = 1'b0;
         reset = 1'b1;
         i_uart_rx = 1'b1;
-
+        key_in = 4'b1111;
         #100;
         reset = 1'b0;
         #100;
@@ -77,7 +91,16 @@ module Uart_top_tb;
         send_uart_byte("L");
         send_uart_byte("L");
         send_uart_byte("o");
-
+        send_uart_byte("\n");
+        transimit_string();
+        transimit_string();
+        transimit_string();
+        transimit_string();
+        transimit_string();
+        transimit_string();
+        transimit_string();
+        transimit_string();
+        transimit_string();
         #1000;
         $stop;
     end

@@ -8,7 +8,7 @@ module Uart_top#(
     input reset,
     input i_uart_rx,
     input [3:0] key_in,
-    output reg o_uart_tx,
+    output o_uart_tx,
     output SEGA,
     output SEGB,
     output SEGC,
@@ -28,20 +28,16 @@ module Uart_top#(
     output SEGCOM8,
     output [7:0]leds
 );
-    wire [3:0] key_clean;
     wire [7:0] rx_data;
     wire [7:0] hex_data;
-    wire       rx_valid;
     reg  [63:0] data_buf;
     reg [7:0] tx_buffer [0:255];
     wire [3:0] key_out;
     wire [7:0] load_data;
     wire [7:0] read_data;
     wire tx_valid;
-    wire read_ena;
-    always @(*) begin
-        o_uart_tx = (key_out[0]) ? 1'b0 : 1'b1; // 按键按下时发送0，松开时发送1
-    end
+    wire rx_valid;
+    wire read_ena, is_busy;
     always @(posedge clk or posedge reset) begin
         if(reset)begin
             tx_buffer[0]<="H";
@@ -84,30 +80,25 @@ module Uart_top#(
         
     
     assign leds = hex_data;  
-    assign load_data = (MODE == 1) ? hex_data : rx_data;
+    assign load_data = (MODE == 0) ? hex_data : rx_data;
     always @(posedge clk) begin
         if (reset) begin
             data_buf <= 64'h0000_0000;
         end else if (rx_valid) begin
-            data_buf <= {data_buf[55:0], load_data}; 
+            data_buf <= {data_buf[55:0], hex_data}; 
         end
     end
 
-    reg read_ena_reg, key_xor_0;
+    reg key_xor_0;
+    wire can_load;
     always @(posedge clk) begin
         if (reset) begin
-            read_ena_reg <= 0;
-            key_xor_0 <= 0;
+            key_xor_0 <= 1;
         end else begin
             key_xor_0 <= key_out[0];
-            if (tx_valid && key_xor_0 ^ key_out[0]) begin
-                read_ena_reg <= 1; 
-            end else begin
-                read_ena_reg <= 0; 
-            end
         end
     end
-    assign read_ena = read_ena_reg;
+    assign read_ena = (key_xor_0 == 1 && key_out[0] == 0); 
     FIFO #(
         .WIDTH(8),
         .DEPTH(256)
@@ -117,10 +108,25 @@ module Uart_top#(
         .i_data(load_data),
         .write_ena(rx_valid),
         .read_ena(read_ena),
-        .o_valid(tx_valid),
-        .o_data(read_data)
+        .tx_busy(is_busy),
+        .o_data(read_data),
+        .tx_valid(tx_valid),
+        .can_load(can_load)
     );
 
+    Uart_tx #(
+        .CLK_FREQ(CLK_FREQ),
+        .BAUD_RATE(BAUD_RATE),
+        .IS_PARITY(CHECK_BIT)
+    ) uart_tx_inst(
+        .reset(reset),
+        .clk(clk),
+        .i_valid(tx_valid),
+        .i_data(read_data),
+        .o_uart_tx(o_uart_tx),
+        .o_busy(is_busy)
+    );
+    
     SegmentDecoder SegmentDecoder_inst (
         .clk(clk),
         .reset(reset),

@@ -9,8 +9,7 @@ module Uart_tx #(
     input  i_valid,
     input  [DATA_BITS - 1:0]i_data,
     output reg o_uart_tx,
-    output reg o_valid,
-    output reg o_busy
+    output o_busy
 );
     localparam BAUD_BIT = CLK_FREQ / BAUD_RATE;
     localparam IDLE = 4'd0, START = 4'd1, DATA = 4'd2, PARITY = 4'd3, STOP = 4'd4, DONE = 4'd5;
@@ -40,12 +39,8 @@ module Uart_tx #(
                 end
             end
             START: begin
-                if (clk_cnt == BAUD_BIT/2 - 1) begin
-                    if (i_valid) begin
-                        next_state = DATA;
-                    end else begin
-                        next_state = IDLE;  
-                    end
+                if (clk_cnt == BAUD_BIT - 1) begin
+                    next_state = DATA;
                 end
             end
             DATA: begin
@@ -84,26 +79,21 @@ module Uart_tx #(
             bit_cnt    <= 4'd0;
             data_buf   <= 8'd0;
             o_uart_tx <= 1'b1; // idle state of UART line is high
-            o_valid    <= 1'b0;
-        end else begin
-            o_valid <= 1'b0;  
-            
+        end else begin          
             case (state)
                 IDLE: begin
                     clk_cnt <= 32'd0;
                     bit_cnt <= 4'd0;
                     o_uart_tx <= 1'b1;
-                    o_busy <= 1'b0;
 
                     if (i_valid) begin
                         data_buf <= i_data;
-                        o_busy <= 1'b1;
                     end
                 end
                 START: begin
-                    if (clk_cnt == BAUD_BIT/2 - 1) begin
+                    if (clk_cnt == BAUD_BIT - 1) begin
                         clk_cnt <= 32'd0;  
-                        data_buf <= i_data;
+                        o_uart_tx <= 1'b0; // start bit 
                     end else begin
                         clk_cnt <= clk_cnt + 1'b1;
                     end
@@ -132,16 +122,18 @@ module Uart_tx #(
                 STOP: begin
                     if (clk_cnt == BAUD_BIT - 1)begin
                         clk_cnt <= 32'd0;
-                        o_uart_tx <= 1'b1; // stop bit is high
+                        o_uart_tx <= 1'b1; // stop bit 
                     end else begin
                         clk_cnt <= clk_cnt + 1'b1;
                     end
                 end
-                DONE: begin
-                    o_valid <= 1'b1;
-                    o_busy <= 1'b0;
+                default: begin
+                    clk_cnt <= 32'd0;
+                    bit_cnt <= 4'd0;
+                    o_uart_tx <= 1'b1;
                 end
             endcase
         end
     end
+    assign o_busy = (state != IDLE);
 endmodule
