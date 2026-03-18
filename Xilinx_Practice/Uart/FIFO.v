@@ -14,8 +14,9 @@ module FIFO#(
 );
 
     reg [WIDTH - 1:0] fifo [0:DEPTH - 1];
-    reg [7:0] head;   // read pointer
-    reg [7:0] tail;   // write pointer
+    localparam ADDR_WIDTH = $clog2(DEPTH);
+    reg [ADDR_WIDTH - 1:0] head;   // read pointer
+    reg [ADDR_WIDTH - 1:0] tail;   // write pointer
     reg is_sending;            // in transmit session
     reg data_pending;       // o_data prepared, waiting to pulse tx_valid
 

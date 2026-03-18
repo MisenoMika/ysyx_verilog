@@ -31,22 +31,12 @@ module Uart_top#(
     wire [7:0] rx_data;
     wire [7:0] hex_data;
     reg  [63:0] data_buf;
-    reg [7:0] tx_buffer [0:255];
     wire [3:0] key_out;
     wire [7:0] load_data;
     wire [7:0] read_data;
     wire tx_valid;
     wire rx_valid;
     wire read_ena, is_busy;
-    always @(posedge clk or posedge reset) begin
-        if(reset)begin
-            tx_buffer[0]<="H";
-            tx_buffer[1]<="E";
-            tx_buffer[2] <= "L";
-            tx_buffer[3]<= "L";
-            tx_buffer[4] <= "o";
-        end
-    end
 
     Uart_rx #(
         .CLK_FREQ(CLK_FREQ),
@@ -106,7 +96,7 @@ module Uart_top#(
         .clk(clk),
         .reset(reset),
         .i_data(load_data),
-        .write_ena(rx_valid),
+        .write_ena(rx_valid && can_load),
         .read_ena(read_ena),
         .tx_busy(is_busy),
         .o_data(read_data),

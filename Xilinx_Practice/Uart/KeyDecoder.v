@@ -1,5 +1,5 @@
 module KeyDecoder #(
-    parameter WAIT_CYCLES = 32'd50_000 * 20
+    parameter WAIT_CYCLES = 32'd50_000 * 20 // 20ms
 )(
     input clk,
     input reset,

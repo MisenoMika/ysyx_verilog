@@ -52,7 +52,7 @@ module Uart_top_tb;
     task transimit_string;
         begin
             key_in[0] = 1'b1;
-            #(CLK_FREQ_HZ/1000 * CLK_PERIOD_NS * 40);
+            #(CLK_FREQ_HZ/1000 * CLK_PERIOD_NS * 40); //注意要大于keyDecoder所用时间
             key_in[0] = 1'b0;
             #(CLK_FREQ_HZ/1000 * CLK_PERIOD_NS * 40);
             key_in[0] = 1'b1;
