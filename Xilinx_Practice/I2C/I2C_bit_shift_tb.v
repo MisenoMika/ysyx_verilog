@@ -1,6 +1,6 @@
 `timescale 1ns/1ps
 
-module tb;
+module I2C_bit_shift_tb;
 localparam   START = 7'b0000001,
                 WR = 7'b0000010,
                 RD = 7'b0000100,
@@ -32,11 +32,11 @@ wire sda_wire;
 
 assign sda_wire = (sda_slave == 0) ? 0 : 1'bz;
 assign i2c_sda = sda_wire;
-pullup(i2c_sda);
+
 I2C_bit_shift dut(
     .clk(clk),
     .reset(reset),
-    .tx_ena(tx_ena),
+    .wr_ena(tx_ena),
     .cmd(cmd),
     .tx_data(tx_data),
     .rx_data(rx_data),

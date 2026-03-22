@@ -31,6 +31,7 @@ module I2C_bit_shift#(
                ACK_TX= 7'b1000000;
 
     //reg [7:0] reg_shift;
+    reg [7:0] tx_data_buf;
     reg [31:0] clk_cnt;
     reg clk_cnt_en;
     reg [6:0] state, next_state;
@@ -71,7 +72,7 @@ module I2C_bit_shift#(
         always @(posedge clk) begin
             case(state)
                 WR_DAT: begin
-                    if(pulse_cnt[1:0] == 2'b00)tx_data_debug[7 - pulse_cnt[4:2]] <= tx_data[7 - pulse_cnt[4:2]];
+                    if(pulse_cnt[1:0] == 2'b00)tx_data_debug[7 - pulse_cnt[4:2]] <= tx_data_buf[7 - pulse_cnt[4:2]];
                 end
                 RD_DAT: begin
                     if(pulse_cnt[1:0] == 2'b10)tx_data_debug[7 - pulse_cnt[4:2]] <= i2c_sda;
@@ -208,14 +209,17 @@ module I2C_bit_shift#(
             //reg_shift <= 0;
             tran_done <= 0;
             sda_oena <= 0;
-            pulse_cnt <= 0;
             rx_data <= 0;
             ack_o <= 0;
+            scl_o <= 1;
+            sda_o <= 1;
         end else begin
             case (state)
                 IDLE: begin
                     tran_done <= 0;
-                    pulse_cnt <= 0;
+                    sda_o <= 1'b1;
+                    scl_o <= 1'b1;
+                    tx_data_buf <= tx_data;
                     if(wr_ena) begin
                         clk_cnt_en <= 1'b1;
                     end else begin
@@ -258,7 +262,7 @@ module I2C_bit_shift#(
                         //pulse_cnt <= (pulse_cnt == 5'd31) ? 0 : pulse_cnt + 1'b1;
                         case (pulse_cnt[1:0])
                             2'b00: begin
-                                sda_o  <= tx_data[7 - pulse_cnt[4:2]];
+                                sda_o  <= tx_data_buf[7 - pulse_cnt[4:2]];
                                 sda_oena <= 1'b1;     
                             end
                             2'b01: begin
@@ -334,7 +338,6 @@ module I2C_bit_shift#(
                 end
 
                 ACK_TX: begin
-                    pulse_cnt <= (pulse_cnt == 5'd3) ? 0 : pulse_cnt + 1'b1;
                     case (pulse_cnt[1:0])
                         2'b00: begin
                             scl_o <= 1'b0;
@@ -363,7 +366,6 @@ module I2C_bit_shift#(
                     end
                 end
                 GEN_STOP: begin
-                    pulse_cnt <= (pulse_cnt == 5'd3) ? 0 : pulse_cnt + 1'b1;
                     case (pulse_cnt[1:0])
                         2'b00: begin
                             sda_oena <= 1'b1;  

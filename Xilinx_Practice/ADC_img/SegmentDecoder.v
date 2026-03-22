@@ -23,8 +23,7 @@ module SegmentDecoder(
     output SEGCOM5,
     output SEGCOM6,
     output SEGCOM7,
-    output SEGCOM8,
-    output reg i_valid
+    output SEGCOM8
 );
     reg [7:0] segcom;
     reg [6:0] seg;
@@ -48,10 +47,8 @@ module SegmentDecoder(
             clkdivCounter <= 32'd0;
             if(segSel == 4'd8) begin
                 segSel <= 4'd1;
-                i_valid <= 1;
             end
             else begin
-                i_valid <= 0;
                 segSel <= segSel + 1'b1;
             end
         end

@@ -29,106 +29,73 @@ module ADC_driver#(
 );
     localparam  DEV_ADDR = 7'b1010_100, 
                 REG_ADDR = 8'b0000_0000; 
-    // output declaration of module I2C_driver
-    wire [7:0] rd_data;
-    reg [7:0] wr_data;
-    wire ack;
-    reg wr_ena, rd_ena;
-    wire rw_done;
-    reg [1:0]state, next_state;
-    reg [63:0] load_data;
-    reg [3:0] byte_cnt;
-    reg [3:0] msb, lsb;
-    wire [7:0] adc_8bit = {msb[3:0], lsb[3:0]};
-    wire [15:0] percent = adc_8bit * 100 / 255;
-    wire [3:0] tens = percent / 10;
-    wire [3:0] ones = percent % 10;
-
+    
     localparam  FIRST_BYTE = 2'b00,
                 SECOND_BYTE = 2'b01,
                 IDLE = 2'b10,
                 UPDATE = 2'b11;
-    always @(posedge clk) begin
-        if(reset) begin
-            state <= 0;
-        end
-        else begin
-            state <= next_state;
-        end
-    end
+    
+    wire [15:0] rd_data;
+    reg [7:0] wr_data;
+    wire ack;
+    reg wr_ena, rd_ena;
+    wire rw_done;
+    reg [63:0] load_data;
+    reg [3:0] byte_cnt;
+
+    reg [15:0] adc_16bit;
+    wire [7:0] adc_8bit = adc_16bit[11:4];
+    wire [15:0] percent = adc_8bit * 100 / 255;
+    wire [7:0] hundreds = percent / 100;
+    wire [7:0] tens = (percent / 10) % 10;
+    wire [7:0] ones = percent % 10;
+    wire byte_cnt_pulse;
+    wire i_valid;
+    reg loading;
+    reg ack_buf;
 
     always @(posedge clk) begin
         if(reset) begin
             wr_ena <= 0;
-            rd_ena <= 1;
+            rd_ena <= 0;
             wr_data <= 0;
             byte_cnt <= 0;
-            msb <= 0;
-            lsb <= 0;
+            loading <= 0;
+            load_data <= 0;
+            ack_buf <= 0;
         end else begin
+            rd_ena <= 1;
             if(rw_done) begin
-                case(state)
-                    IDLE: begin
-                        rd_ena <= 0;
-                        wr_ena <= 0;
-                    end
-                    FIRST_BYTE: begin
-                        rd_ena <= 1;
-                        msb <= rd_data[3:0];
-                    end
+                loading <= 1;
+                adc_16bit <= rd_data;
+                ack_buf <= ack;
+            end 
 
-                    SECOND_BYTE: begin
-                        rd_ena <= 1;
-                        lsb <= rd_data[7:4];
-                    end
-
-                    UPDATE: begin
-                        load_data <= {4'h0, tens, 4'h0, ones, {6{"-"}}}; 
-                    end
-                endcase
+            if(loading) begin
+                if(ack_buf == 0) begin
+                    load_data <= {{5{"-"}}, hundreds, tens, ones};
+                end else begin
+                    load_data <= {{"E"}, {"r"}, {"r"}, {"o"}, {4{"-"}}}; 
+                end
+                loading <= 0;
             end
         end
     end
 
-    always @(*) begin
-        case(state)
-            IDLE: begin
-                next_state = FIRST_BYTE;
-            end
-
-            FIRST_BYTE: begin
-                if(rw_done) begin
-                    next_state = SECOND_BYTE;
-                end
-                else begin
-                    next_state = FIRST_BYTE;
-                end
-            end
-
-            SECOND_BYTE: begin
-                if(rw_done) begin
-                    next_state = UPDATE;
-                end
-                else begin
-                    next_state = SECOND_BYTE;
-                end
-            end
-
-            
-        endcase
-    end
     I2C_driver #(
         .CLK_FREQ 	(CLK_FREQ  ),
-        .I2C_FREQ 	(I2C_FREQ  )  
+        .I2C_FREQ 	(I2C_FREQ  ),
+        .WR_BYTE_NUM(8'd1),
+        .RD_BYTE_NUM(8'd2)
         )
     u_I2C_driver(
         .clk           	(clk            ),
         .reset         	(reset          ),
         .wr_ena        	(wr_ena         ),
         .rd_ena        	(rd_ena         ),
-        ._reg_addr     	(REG_ADDR   ),
+        .i_reg_addr     ({REG_ADDR, 8'b0}   ),
         .reg_addr_mode 	(0              ),
-        .dev_addr      	({DEV_ADDR, 8'b0}    ),
+        .i_dev_addr     (DEV_ADDR       ),
         .dev_addr_mode 	(0 ),
         .wr_data       	(wr_data        ),
         .rd_data       	(rd_data        ),
@@ -143,7 +110,8 @@ module ADC_driver#(
         .clk     	(clk      ),
         .reset   	(reset    ),
         .load    	(load_data  ),
-        .DP_in   	(8'b0       ),
+        .DP_in   	(8'b1111_1111    ),   
+        .DP_out     (DP        ),
         .mode    	(8'hff        ),
         .graphData    (64'b0       ),
         .SEGA    	(SEGA     ),
@@ -160,7 +128,8 @@ module ADC_driver#(
         .SEGCOM5 	(SEGCOM5  ),
         .SEGCOM6 	(SEGCOM6  ),
         .SEGCOM7 	(SEGCOM7  ),
-        .SEGCOM8 	(SEGCOM8  )
+        .SEGCOM8 	(SEGCOM8  ),
+        .i_valid    (i_valid    )
     );
     
 endmodule

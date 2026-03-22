@@ -44,6 +44,7 @@ module SegmentDecoder(
     assign digit8 = (mode[7] == 1'b1) ? load[63:56] : graphData[63:56];
 
     always @(posedge clk) begin
+        if(reset) i_valid <= 0;
         if(clkdivCounter == 32'd5000)begin//5000（太低了会出现"鬼影"）
             clkdivCounter <= 32'd0;
             if(segSel == 4'd8) begin
