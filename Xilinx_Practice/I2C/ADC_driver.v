@@ -53,6 +53,7 @@ module ADC_driver#(
     wire i_valid;
     reg loading;
     reg ack_buf;
+    wire i2c_ready;
 
     always @(posedge clk) begin
         if(reset) begin
@@ -64,7 +65,7 @@ module ADC_driver#(
             load_data <= 0;
             ack_buf <= 0;
         end else begin
-            rd_ena <= 1;
+            rd_ena <= (i2c_ready);
             if(rw_done) begin
                 loading <= 1;
                 adc_16bit <= rd_data;
@@ -102,7 +103,8 @@ module ADC_driver#(
         .ack           	(ack            ),
         .rw_done       	(rw_done        ),
         .i2c_scl       	(i2c_scl        ),
-        .i2c_sda       	(i2c_sda        )
+        .i2c_sda       	(i2c_sda        ),
+        .i2c_ready      (i2c_ready      )
     );
     
     

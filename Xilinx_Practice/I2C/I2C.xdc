@@ -18,6 +18,11 @@ set_property IOSTANDARD LVCMOS33 [get_ports SEGG]
 set_property IOSTANDARD LVCMOS33 [get_ports DP]
 set_property IOSTANDARD LVCMOS33 [get_ports i2c_scl]
 set_property IOSTANDARD LVCMOS33 [get_ports i2c_sda]
+set_property IOSTANDARD LVCMOS33 [get_ports {key_in[3]}]
+set_property IOSTANDARD LVCMOS33 [get_ports {key_in[2]}]
+set_property IOSTANDARD LVCMOS33 [get_ports {key_in[1]}]
+set_property IOSTANDARD LVCMOS33 [get_ports {key_in[0]}]
+
 
 
 set_property PACKAGE_PIN D3 [get_ports SEGA]
@@ -40,4 +45,8 @@ set_property PACKAGE_PIN B6 [get_ports reset]
 set_property PACKAGE_PIN G11 [get_ports clk]
 set_property PACKAGE_PIN E11 [get_ports i2c_scl]
 set_property PACKAGE_PIN M10 [get_ports i2c_sda]
+set_property PACKAGE_PIN M5 [get_ports {key_in[0]}]
+set_property PACKAGE_PIN M4 [get_ports {key_in[1]}]
+set_property PACKAGE_PIN P5 [get_ports {key_in[2]}]
+set_property PACKAGE_PIN N4 [get_ports {key_in[3]}]
 

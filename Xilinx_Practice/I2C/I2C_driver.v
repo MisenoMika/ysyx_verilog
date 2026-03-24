@@ -16,6 +16,7 @@ module I2C_driver#(
     output reg [RD_BYTE_NUM*8 - 1:0] rd_data,
     output reg ack,
     output reg rw_done,
+    output i2c_ready,
     output i2c_scl,
     inout i2c_sda
 );
@@ -47,6 +48,8 @@ module I2C_driver#(
     wire tran_done;
     wire ack_o;
     reg [7:0] task_cnt;
+
+    assign i2c_ready = (state == IDLE);
 
     `define DEBUG
     `ifdef DEBUG
@@ -222,7 +225,9 @@ module I2C_driver#(
 
                 WAIT_WR_REG: begin
                     if (tran_done) begin
-                        ack <= ack | ack_o; // 防止覆盖前一次序列可能出现的NACK
+                        if(task_cnt < 4) begin
+                            ack <= ack | ack_o; // 防止覆盖前一次序列可能出现的NACK
+                        end 
                         if(task_cnt == 4) begin
                             wr_data_buf <= wr_data_buf >> 8;
                         end
@@ -231,7 +236,7 @@ module I2C_driver#(
                                 task_cnt <= 8'd1;
                             end
                             1: begin
-                                if(reg_addr_mode) begin
+                                if(reg_addr_mode == 1) begin
                                     task_cnt <= 8'd2;
                                 end else begin
                                     task_cnt <= 8'd3;
@@ -279,16 +284,16 @@ module I2C_driver#(
                         if(task_cnt < 4) begin
                             ack <= ack | ack_o; // 防止覆盖前一次序列可能出现的NACK
                         end 
-                        /*if(task_cnt == 4 || task_cnt == 5) begin
-                            rd_data <= (rd_data << 8) | rx_data;
-                        end*/
                         if(task_cnt == 4 || task_cnt == 5) begin
+                            rd_data <= (rd_data << 8) | rx_data;
+                        end
+                        /*if(task_cnt == 4 || task_cnt == 5) begin
                             if(byte_left == 2)begin
                                 rd_data[15:8] <= rx_data;
                             end else if(byte_left == 1)begin
                                 rd_data[7:0] <= rx_data;
                             end
-                        end
+                        end*/
                         case(task_cnt)
                             0: begin
                                 task_cnt <= 1;
